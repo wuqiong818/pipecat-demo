@@ -14,4 +14,4 @@ RUN poetry config virtualenvs.create false && \
     poetry install --no-cache --no-root --only main && \
     rm -rf ~/.cache
 
-CMD python /app/pipecat-demo/25daily-openai4o-openaitts.py
+CMD python /app/25daily-openai4o-openaitts.py
