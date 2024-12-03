@@ -8,7 +8,7 @@ from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
-from pipecat.services.whisper import WhisperSTTService
+from pipecat.services.whisper import WhisperSTTService,Model
 from pipecat.transports.services.daily import DailyParams, DailyTransport
 from pipecat.services.openai import OpenAILLMService, OpenAITTSService,OpenAILLMContext
 from openai.types.chat import ChatCompletionToolParam
@@ -58,7 +58,6 @@ async def main():
             "Respond bot",
             DailyParams(
                 audio_out_enabled=True,
-                # transcription_enabled=True,
                 vad_enabled=True,
                 vad_analyzer=SileroVADAnalyzer(),
                 vad_audio_passthrough=True,
@@ -106,7 +105,7 @@ async def main():
         context_aggregator = llm.create_context_aggregator(context)
 
 
-        stt = WhisperSTTService()
+        stt = WhisperSTTService(model=Model.TINY)
 
         tts = OpenAITTSService(api_key=os.getenv("OPENAI_API_KEY"), voice="alloy")
 

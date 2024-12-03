@@ -8,8 +8,7 @@ from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
-from pipecat.services.whisper import WhisperSTTService
-from pipecat.transports.services.daily import DailyParams, DailyTransport
+from pipecat.transports.services.daily import DailyParams, DailyTransport,DailyTranscriptionSettings
 from pipecat.services.openai import OpenAILLMService, OpenAITTSService,OpenAILLMContext
 from openai.types.chat import ChatCompletionToolParam
 from pipecat.audio.vad.silero import SileroVADAnalyzer
@@ -62,6 +61,10 @@ async def main():
                 vad_enabled=True,
                 vad_analyzer=SileroVADAnalyzer(),
                 vad_audio_passthrough=True,
+                transcription_settings = DailyTranscriptionSettings(
+                    model= "nova-2-general",
+                    language="zh",
+                )
             ),
         )
 
@@ -113,7 +116,6 @@ async def main():
         pipeline = Pipeline(
             [
                 transport.input(),
-                # stt,
                 context_aggregator.user(),
                 llm,
                 tts,
