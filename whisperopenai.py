@@ -14,6 +14,7 @@ from typing import AsyncGenerator
 import numpy as np
 
 from pipecat.frames.frames import ErrorFrame, Frame, TranscriptionFrame
+# from pipecat.services.ai_services import SegmentedSTTService
 from ai_services import SegmentedSTTService
 from pipecat.utils.time import time_now_iso8601
 
@@ -23,7 +24,7 @@ from loguru import logger
 
 
 try:
-    from openai import OpenAI
+    from openai import OpenAI,AsyncOpenAI
 except ModuleNotFoundError as e:
     logger.error(f"Exception: {e}")
     logger.error("In order to use OpenAIWhisper, you need to `pip install OpenAI`.")
@@ -53,7 +54,7 @@ class WhisperOpenaiSTTService(SegmentedSTTService):
         # self._compute_type = compute_type
         self.set_model_name(model if isinstance(model, str) else model.value)
         # self._no_speech_prob = no_speech_prob
-        self._model: OpenAI | None = None
+        self._model: AsyncOpenAI | None = None
         self._load()
 
     def can_generate_metrics(self) -> bool:
@@ -61,7 +62,7 @@ class WhisperOpenaiSTTService(SegmentedSTTService):
 
     def _load(self):
         logger.debug("Connection Openai Whisper model...")
-        self._model = OpenAI()
+        self._model = AsyncOpenAI()
         logger.debug("Connection successfully Whisper model")
 
     async def run_stt(self, audio: bytes) -> AsyncGenerator[Frame, None]:
@@ -73,25 +74,19 @@ class WhisperOpenaiSTTService(SegmentedSTTService):
 
         await self.start_processing_metrics()
         await self.start_ttfb_metrics()
-        # print("audio length = "+len(audio))
-
-        # 现将所有的bytes放入到一个队列当中，只有达到一定的长度采取出来。
-        # 剩余部分的bytes什么时候出去，EndFrame？
-
 
         # Divide by 32768 because we have signed 16-bit data.
         # audio_float = np.frombuffer(audio, dtype=np.int16).astype(np.float32) / 32768.0
-        transcript = self._model.audio.transcriptions.create(
+        transcript = await self._model.audio.transcriptions.create(
             model="whisper-1",
             file=("audio.wav",audio)
         )
 
-        text: str = ""
         text = transcript.text
 
         await self.stop_ttfb_metrics()
         await self.stop_processing_metrics()
-
+        
         if text:
             logger.debug(f"Transcription: [{text}]")
             yield TranscriptionFrame(text, "", time_now_iso8601())

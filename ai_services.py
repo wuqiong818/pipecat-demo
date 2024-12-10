@@ -512,6 +512,8 @@ class STTService(AIService):
             await self.push_frame(frame, direction)
 
 
+
+# SegmentedSTTService实例的声明周期是什么，什么时候销毁？
 class SegmentedSTTService(STTService):
     """SegmentedSTTService is an STTService that will detect speech and will run
     speech-to-text on speech segments only, instead of a continous stream.
@@ -524,8 +526,8 @@ class SegmentedSTTService(STTService):
         min_volume: float = 0.6,
         # max_silence_secs: float = 0.3,
         # max_buffer_secs: float = 1.5,
-        max_silence_secs: float = 1.3,
-        max_buffer_secs: float = 2,
+        max_silence_secs: float = 1.5,
+        max_buffer_secs: float = 3,
         sample_rate: int = 24000,
         num_channels: int = 1,
         **kwargs,
@@ -543,10 +545,16 @@ class SegmentedSTTService(STTService):
         self._prev_volume = 0
 
     async def process_audio_frame(self, frame: AudioRawFrame):
+        "接收到frame时,检查一下,wavefile对象是否为空"
+        if self._wave is None or self._wave._file is None:
+            print("self._wave is none,present new a object",self._wave)
+            self._content, self._wave = self._new_wave()
+
         # Try to filter out empty background noise
         volume = self._get_smoothed_volume(frame)
         if volume >= self._min_volume:
             # If volume is high enough, write new data to wave file
+            print("self._wave",self._wave)
             self._wave.writeframes(frame.audio)
             self._silence_num_frames = 0
         else:
@@ -572,9 +580,11 @@ class SegmentedSTTService(STTService):
             (self._content, self._wave) = self._new_wave()
 
     async def stop(self, frame: EndFrame):
+        print("exec stop, self._wave.close",self._wave)
         self._wave.close()
 
     async def cancel(self, frame: CancelFrame):
+        print("exec cancel, self._wave.close",self._wave)
         self._wave.close()
 
     def _new_wave(self):
@@ -583,6 +593,7 @@ class SegmentedSTTService(STTService):
         ww.setsampwidth(2)
         ww.setnchannels(self._num_channels)
         ww.setframerate(self._sample_rate)
+        print("exec new wave file",ww)
         return (content, ww)
 
     def _get_smoothed_volume(self, frame: AudioRawFrame) -> float:

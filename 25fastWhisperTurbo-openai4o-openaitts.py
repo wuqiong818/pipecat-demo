@@ -8,7 +8,8 @@ from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
-from pipecat.services.whisper import WhisperSTTService,Model
+from whisper import WhisperSTTService
+# from pipecat.services.whisper import WhisperSTTService
 from pipecat.transports.services.daily import DailyParams, DailyTransport
 from pipecat.services.openai import OpenAILLMService, OpenAITTSService,OpenAILLMContext
 from openai.types.chat import ChatCompletionToolParam
@@ -105,7 +106,7 @@ async def main():
         context_aggregator = llm.create_context_aggregator(context)
 
 
-        stt = WhisperSTTService(model=Model.TINY)
+        stt = WhisperSTTService(model="mobiuslabsgmbh/faster-whisper-large-v3-turbo")
 
         tts = OpenAITTSService(api_key=os.getenv("OPENAI_API_KEY"), voice="alloy")
 
