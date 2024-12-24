@@ -140,7 +140,7 @@ async def main():
             await transport.capture_participant_transcription(participant["id"])
             # Kick off the conversation.
             await task.queue_frames([context_aggregator.user().get_context_frame()])
-
+        
         runner = PipelineRunner()
 
         await runner.run(task)

@@ -7,10 +7,10 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-pipecat-ai = {extras = ["whisper","daily"], version = "^0.0.49"}
+pipecat-ai = {extras = ["whisper","daily","openai"], version = "^0.0.49"}
 python-dotenv = "^1.0.1"
 onnxruntime = "^1.20.1"
-openai = "^1.55.2"
+openai = "1.50.2"
 websockets = "13.1"
 cartesia = "^1.2.0"
 livekit = "0.17.5"
@@ -24,6 +24,7 @@ daily = "^0.2.1"
 transformers = "^4.47.0"
 torch = "^2.5.1"
 accelerate = "^0.26.0"
+httpx = "0.27.2"
 
 
 [build-system]

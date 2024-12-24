@@ -12,7 +12,6 @@ from datetime import datetime
 import aiohttp
 from dotenv import load_dotenv
 from loguru import logger
-from runner import configure
 from livekit import api
 
 
@@ -29,6 +28,7 @@ from pipecat.services.openai_realtime_beta import (
     TurnDetection,
 )
 from pipecat.transports.services.livekit import LiveKitParams, LiveKitTransport
+
 
 load_dotenv(override=True)
 
@@ -204,15 +204,38 @@ Remember, your responses should be short. Just one or two sentences, usually."""
             ),
         )
 
+        runner = PipelineRunner()
+
+
         @transport.event_handler("on_first_participant_joined")
         async def on_first_participant_joined(transport, participant_id):
             # await transport.capture_participant_transcription(participant_id)
             # Kick off the conversation.
             await task.queue_frames([context_aggregator.user().get_context_frame()])
 
-        runner = PipelineRunner()
+        @transport.event_handler("on_participant_disconnected")
+        async def on_participant_disconnected(transport, participant):
+            print("on_participant_disconnected event emitted")
+            # await runner.cancel() # 发送CancelFrame 立即停止
+            await runner.stop_when_done() # 发送EndFrame normal shutdown，推荐使用cancel()
+            
+            # # when user leave room,close pipecat-agent
+            # logger.warning(f"participant_disconnected,{participant}")
+            # logger.warning(f"cancel task f{task.name}{task.id}")
+            # await task.cancel()
+            # logger.warning("task cancel is successful")
+
+
+        # 只有当房间被删除或者连接遇到fatal Error时才会被调用。
+        @transport.event_handler("on_disconnected")
+        async def on_disconnected(transport, reason=None):
+            await runner.cancel() # 发送CancelFrame 立即停止
+            print(f"on_disconnected event emitted{reason}")
+
+
 
         await runner.run(task)
+        print("run ending!!!")
 
 
 if __name__ == "__main__":

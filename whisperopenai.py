@@ -6,12 +6,9 @@
 
 """This module implements Whisper transcription with a locally-downloaded model."""
 
-import asyncio
-
 from enum import Enum
 from typing import AsyncGenerator
 
-import numpy as np
 
 from pipecat.frames.frames import ErrorFrame, Frame, TranscriptionFrame
 # from pipecat.services.ai_services import SegmentedSTTService
@@ -24,7 +21,7 @@ from loguru import logger
 
 
 try:
-    from openai import OpenAI,AsyncOpenAI
+    from openai import AsyncOpenAI
 except ModuleNotFoundError as e:
     logger.error(f"Exception: {e}")
     logger.error("In order to use OpenAIWhisper, you need to `pip install OpenAI`.")

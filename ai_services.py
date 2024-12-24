@@ -312,6 +312,7 @@ class TTSService(AIService):
             await self.push_frame(frame, direction)
 
     async def push_frame(self, frame: Frame, direction: FrameDirection = FrameDirection.DOWNSTREAM):
+        print("ai_service frame = ",frame)
         await super().push_frame(frame, direction)
 
         if self._push_stop_frames and (
@@ -524,9 +525,9 @@ class SegmentedSTTService(STTService):
         self,
         *,
         min_volume: float = 0.6,
-        # max_silence_secs: float = 0.3,
+        max_silence_secs: float = 0.5,
         # max_buffer_secs: float = 1.5,
-        max_silence_secs: float = 1.5,
+        # max_silence_secs: float = 1.5,
         max_buffer_secs: float = 3,
         sample_rate: int = 24000,
         num_channels: int = 1,
@@ -547,14 +548,14 @@ class SegmentedSTTService(STTService):
     async def process_audio_frame(self, frame: AudioRawFrame):
         "接收到frame时,检查一下,wavefile对象是否为空"
         if self._wave is None or self._wave._file is None:
-            print("self._wave is none,present new a object",self._wave)
+            # print("self._wave is none,present new a object",self._wave)
             self._content, self._wave = self._new_wave()
 
         # Try to filter out empty background noise
         volume = self._get_smoothed_volume(frame)
         if volume >= self._min_volume:
             # If volume is high enough, write new data to wave file
-            print("self._wave",self._wave)
+            # print("self._wave",self._wave)
             self._wave.writeframes(frame.audio)
             self._silence_num_frames = 0
         else:
@@ -569,10 +570,10 @@ class SegmentedSTTService(STTService):
             # buffer_secs > self._max_buffer_secs or silence_secs > self._max_silence_secs
             buffer_secs > self._max_buffer_secs or (silence_secs > self._max_silence_secs and buffer_secs > 0.1)
         ):
-            print("_max_silence_secs=",self._max_buffer_secs)
-            print("_max_silence_secs=",self._max_silence_secs)
-            print("buffer_secs=",buffer_secs)
-            print("silence_secs=",silence_secs)
+            # print("_max_buffer_secs=",self._max_buffer_secs)
+            # print("_max_silence_secs=",self._max_silence_secs)
+            # print("buffer_secs=",buffer_secs)
+            # print("silence_secs=",silence_secs)
             self._silence_num_frames = 0
             self._wave.close()
             self._content.seek(0)
@@ -580,11 +581,11 @@ class SegmentedSTTService(STTService):
             (self._content, self._wave) = self._new_wave()
 
     async def stop(self, frame: EndFrame):
-        print("exec stop, self._wave.close",self._wave)
+        print("ai_service.py SegmentedSTTService received EndFrame",self._wave)
         self._wave.close()
 
     async def cancel(self, frame: CancelFrame):
-        print("exec cancel, self._wave.close",self._wave)
+        print("ai_service.py SegmentedSTTService received CancelFrame",self._wave)
         self._wave.close()
 
     def _new_wave(self):
