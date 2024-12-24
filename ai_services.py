@@ -570,10 +570,6 @@ class SegmentedSTTService(STTService):
             # buffer_secs > self._max_buffer_secs or silence_secs > self._max_silence_secs
             buffer_secs > self._max_buffer_secs or (silence_secs > self._max_silence_secs and buffer_secs > 0.1)
         ):
-            # print("_max_buffer_secs=",self._max_buffer_secs)
-            # print("_max_silence_secs=",self._max_silence_secs)
-            # print("buffer_secs=",buffer_secs)
-            # print("silence_secs=",silence_secs)
             self._silence_num_frames = 0
             self._wave.close()
             self._content.seek(0)

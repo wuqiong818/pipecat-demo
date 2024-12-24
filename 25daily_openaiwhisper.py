@@ -8,7 +8,8 @@ from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
-from pipecat.transports.services.daily import DailyParams, DailyTransport,DailyTranscriptionSettings
+from whisperopenai import WhisperOpenaiSTTService
+from pipecat.transports.services.daily import DailyParams, DailyTransport
 from pipecat.services.openai import OpenAILLMService, OpenAITTSService,OpenAILLMContext
 from openai.types.chat import ChatCompletionToolParam
 from pipecat.audio.vad.silero import SileroVADAnalyzer
@@ -57,16 +58,12 @@ async def main():
             "Respond bot",
             DailyParams(
                 audio_out_enabled=True,
-                transcription_enabled=True,
                 vad_enabled=True,
                 vad_analyzer=SileroVADAnalyzer(),
                 vad_audio_passthrough=True,
-                transcription_settings = DailyTranscriptionSettings(
-                    model= "nova-2-general",
-                    language="zh",
-                )
             ),
         )
+        
 
         llm = OpenAILLMService(api_key=os.getenv("OPENAI_API_KEY"), model="gpt-4o")
         # Register a function_name of None to get all functions
@@ -108,6 +105,9 @@ async def main():
         context = OpenAILLMContext(messages, tools)
         context_aggregator = llm.create_context_aggregator(context)
 
+
+        stt = WhisperOpenaiSTTService()
+
         tts = OpenAITTSService(api_key=os.getenv("OPENAI_API_KEY"), voice="alloy")
 
         tl = TranscriptionLogger()
@@ -116,6 +116,7 @@ async def main():
         pipeline = Pipeline(
             [
                 transport.input(),
+                stt,
                 context_aggregator.user(),
                 llm,
                 tts,
@@ -138,9 +139,9 @@ async def main():
         @transport.event_handler("on_first_participant_joined")
         async def on_first_participant_joined(transport, participant):
             await transport.capture_participant_transcription(participant["id"])
- 
+            # Kick off the conversation.
             await task.queue_frames([context_aggregator.user().get_context_frame()])
-
+        
         runner = PipelineRunner()
 
         await runner.run(task)
