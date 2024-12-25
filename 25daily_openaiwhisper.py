@@ -2,21 +2,21 @@ import aiohttp
 import asyncio
 import sys
 import os
+from loguru import logger
 
 from pipecat.frames.frames import Frame, TranscriptionFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
-from whisperopenai import WhisperOpenaiSTTService
 from pipecat.transports.services.daily import DailyParams, DailyTransport
 from pipecat.services.openai import OpenAILLMService, OpenAITTSService,OpenAILLMContext
 from openai.types.chat import ChatCompletionToolParam
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 
 from runner import configure
+from whisperopenai import WhisperOpenaiSTTService
 
-from loguru import logger
 
 from dotenv import load_dotenv
 
