@@ -13,6 +13,7 @@ from pipecat.transports.services.daily import DailyParams, DailyTransport
 from pipecat.services.openai import OpenAILLMService, OpenAITTSService,OpenAILLMContext
 from openai.types.chat import ChatCompletionToolParam
 from pipecat.audio.vad.silero import SileroVADAnalyzer
+from pipecat.audio.vad.vad_analyzer import VADParams
 
 from runner import configure
 from whisperopenai import WhisperOpenaiSTTService
@@ -59,7 +60,7 @@ async def main():
             DailyParams(
                 audio_out_enabled=True,
                 vad_enabled=True,
-                vad_analyzer=SileroVADAnalyzer(),
+                vad_analyzer=SileroVADAnalyzer(params=VADParams(stop_secs=0.5)),
                 vad_audio_passthrough=True,
             ),
         )

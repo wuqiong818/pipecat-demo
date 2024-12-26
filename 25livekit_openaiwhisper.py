@@ -15,6 +15,7 @@ from loguru import logger
 from livekit import api
 
 from whisperopenai import WhisperOpenaiSTTService
+
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.audio.vad.vad_analyzer import VADParams
 from pipecat.pipeline.pipeline import Pipeline
@@ -154,7 +155,7 @@ async def main():
                 audio_out_enabled=True,
                 # audio_out_sample_rate=24000,
                 vad_enabled=True,
-                vad_analyzer=SileroVADAnalyzer(params=VADParams(stop_secs=0.8)),
+                vad_analyzer=SileroVADAnalyzer(params=VADParams(stop_secs=0.5)),
             ),
         )
 
